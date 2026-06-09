@@ -193,7 +193,7 @@ body {
   text-align: ${alignmentCss};
 }
 
-h1, h2, h3, h4 {
+h1, h3, h4 {
   font-family: '${fontCssName}', sans-serif;
   color: ${options.textColor};
   margin-top: 1.5em;
@@ -202,9 +202,24 @@ h1, h2, h3, h4 {
 }
 
 h2 {
+  font-family: '${fontCssName}', sans-serif;
   font-size: 1.4em;
+  font-weight: ${options.headingBold ? 'bold' : 'normal'};
+  font-style: ${options.headingItalic ? 'italic' : 'normal'};
+  color: ${options.useHeadingCustomColor ? options.headingColor : options.textColor};
+  background-color: ${options.useHeadingBgColor ? options.headingBgColor : 'transparent'};
+  ${options.useHeadingBgColor ? `
+  padding: 6px 12px;
+  display: inline-block;
+  border: 2px solid #000;
+  box-shadow: 2.5px 2.5px 0px #000;
+  margin: 0;
+  ` : `
   border-bottom: 1px solid ${options.textColor}33;
   padding-bottom: 0.3em;
+  display: block;
+  width: 100%;
+  `}
 }
 
 p {
@@ -273,7 +288,9 @@ span.sentence-bg {
 </head>
 <body>
   <section>
-    <h2${headingStyle}>${displayTitle}</h2>
+    <div style="text-align: center; margin-top: 2em; margin-bottom: 1.5em;">
+      <h2${headingStyle}>${displayTitle}</h2>
+    </div>
     ${elementsHtml}
   </section>
 </body>

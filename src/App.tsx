@@ -34,6 +34,12 @@ const DEFAULT_OPTIONS: AppOptions = {
   highlightTags: [],
   advancedColoring: { type: 'none', colors: [] },
   outputFormat: 'pdf',
+  headingBold: true,
+  headingItalic: false,
+  useHeadingCustomColor: false,
+  headingColor: '#a855f7',
+  useHeadingBgColor: false,
+  headingBgColor: '#e0f2fe',
 };
 
 export default function App() {

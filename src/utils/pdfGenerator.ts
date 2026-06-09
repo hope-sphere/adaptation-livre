@@ -22,6 +22,12 @@ export interface AppOptions {
   highlightTags: HighlightTag[];
   advancedColoring: AdvancedColoringConfig;
   outputFormat: 'pdf' | 'epub';
+  headingBold: boolean;
+  headingItalic: boolean;
+  useHeadingCustomColor: boolean;
+  headingColor: string;
+  useHeadingBgColor: boolean;
+  headingBgColor: string;
 }
 
 export async function generatePdf(
@@ -139,10 +145,24 @@ export async function generatePdf(
     
     h2.innerText = titleText;
     h2.style.fontSize = `${options.fontSize * 1.35}pt`;
-    h2.style.fontWeight = 'bold';
+    h2.style.fontWeight = options.headingBold ? 'bold' : 'normal';
+    h2.style.fontStyle = options.headingItalic ? 'italic' : 'normal';
     h2.style.marginTop = '0px';
     h2.style.marginBottom = `${options.paragraphSpacing * 1.25}px`;
-    h2.style.color = options.textColor;
+    h2.style.color = options.useHeadingCustomColor ? options.headingColor : options.textColor;
+    h2.style.textAlign = 'center';
+
+    if (options.useHeadingBgColor) {
+      h2.style.backgroundColor = options.headingBgColor;
+      h2.style.padding = '8px 16px';
+      h2.style.display = 'inline-block';
+      h2.style.border = '2px solid #000';
+      h2.style.boxShadow = '2px 2px 0px #000';
+      h2.style.alignSelf = 'center';
+    } else {
+      h2.style.backgroundColor = 'transparent';
+      h2.style.alignSelf = 'stretch';
+    }
     
     if (checkOverflow(currentPage, h2)) {
       // If the heading alone overflows the empty page, force add it

@@ -82,22 +82,29 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
             
             return (
               <section key={sIdx} className="space-y-6">
-                {/* Chapter Heading */}
-                <h2
-                  style={{
-                    fontSize: '1.4em',
-                    fontWeight: 'bold',
-                    textDecoration: options.normalizeHeadings ? 'underline' : 'none',
-                    color: options.textColor,
-                    marginTop: '2.5em'
-                  }}
-                  className="mb-5 text-center leading-snug"
-                >
-                  {options.showHeadingIcon && (
-                    <span className="mr-2.5 inline-block select-none">{options.headingEmoji}</span>
-                  )}
-                  {headingText}
-                </h2>
+                {/* Chapter Heading wrapper for centering */}
+                <div className="text-center w-full" style={{ marginTop: '2.5em', marginBottom: '1.5em' }}>
+                  <h2
+                    style={{
+                      fontSize: '1.4em',
+                      fontWeight: options.headingBold ? 'bold' : 'normal',
+                      fontStyle: options.headingItalic ? 'italic' : 'normal',
+                      textDecoration: options.normalizeHeadings ? 'underline' : 'none',
+                      color: options.useHeadingCustomColor ? options.headingColor : options.textColor,
+                      backgroundColor: options.useHeadingBgColor ? options.headingBgColor : 'transparent',
+                      padding: options.useHeadingBgColor ? '6px 14px' : '0px',
+                      display: options.useHeadingBgColor ? 'inline-block' : 'block',
+                      border: options.useHeadingBgColor ? '2.5px solid #000' : 'none',
+                      boxShadow: options.useHeadingBgColor ? '2.5px 2.5px 0px #000' : 'none',
+                    }}
+                    className="leading-snug inline-block max-w-full text-center"
+                  >
+                    {options.showHeadingIcon && (
+                      <span className="mr-2.5 inline-block select-none">{options.headingEmoji}</span>
+                    )}
+                    {headingText}
+                  </h2>
+                </div>
 
                 {/* Chapter Elements (Paragraphs and Images) */}
                 <div className="space-y-5">

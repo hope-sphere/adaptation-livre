@@ -288,6 +288,84 @@ export const Sidebar: React.FC<SidebarProps> = ({
               />
             </div>
 
+            {/* Heading Bold */}
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white/80 font-bold uppercase cursor-pointer" htmlFor="heading-bold">
+                Titres en gras
+              </label>
+              <input
+                id="heading-bold"
+                type="checkbox"
+                checked={options.headingBold}
+                onChange={(e) => updateOption('headingBold', e.target.checked)}
+              />
+            </div>
+
+            {/* Heading Italic */}
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white/80 font-bold uppercase cursor-pointer" htmlFor="heading-italic">
+                Titres en italique
+              </label>
+              <input
+                id="heading-italic"
+                type="checkbox"
+                checked={options.headingItalic}
+                onChange={(e) => updateOption('headingItalic', e.target.checked)}
+              />
+            </div>
+
+            {/* Custom heading color */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-white/80 font-bold uppercase cursor-pointer" htmlFor="heading-custom-color">
+                  Couleur spécifique
+                </label>
+                <input
+                  id="heading-custom-color"
+                  type="checkbox"
+                  checked={options.useHeadingCustomColor}
+                  onChange={(e) => updateOption('useHeadingCustomColor', e.target.checked)}
+                />
+              </div>
+              {options.useHeadingCustomColor && (
+                <div className="flex gap-2 items-center bg-black/40 p-1.5 border border-black animate-fade-in">
+                  <input
+                    type="color"
+                    value={options.headingColor}
+                    onChange={(e) => updateOption('headingColor', e.target.value)}
+                    className="w-7 h-7 p-0 border border-black cursor-pointer shadow-[1px_1px_0px_#000]"
+                  />
+                  <span className="text-[9px] font-bold font-mono text-white/50">{options.headingColor}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Custom heading bg color */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-white/80 font-bold uppercase cursor-pointer" htmlFor="heading-custom-bg">
+                  Couleur de fond
+                </label>
+                <input
+                  id="heading-custom-bg"
+                  type="checkbox"
+                  checked={options.useHeadingBgColor}
+                  onChange={(e) => updateOption('useHeadingBgColor', e.target.checked)}
+                />
+              </div>
+              {options.useHeadingBgColor && (
+                <div className="flex gap-2 items-center bg-black/40 p-1.5 border border-black animate-fade-in">
+                  <input
+                    type="color"
+                    value={options.headingBgColor}
+                    onChange={(e) => updateOption('headingBgColor', e.target.value)}
+                    className="w-7 h-7 p-0 border border-black cursor-pointer shadow-[1px_1px_0px_#000]"
+                  />
+                  <span className="text-[9px] font-bold font-mono text-white/50">{options.headingBgColor}</span>
+                </div>
+              )}
+            </div>
+
             {/* Headings icon indicator */}
             <div className="flex items-center justify-between">
               <label className="text-xs text-white/80 font-bold uppercase cursor-pointer" htmlFor="heading-icon">
