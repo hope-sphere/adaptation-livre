@@ -249,16 +249,27 @@ span.sentence-bg {
     const chapterId = `chapter_${sIdx + 1}`;
     const chapterHref = `chapter_${sIdx + 1}.xhtml`;
 
-    let displayTitle = section.title;
-    let headingStyle = '';
-    
-    if (options.normalizeHeadings) {
-      displayTitle = `${sIdx + 1}. ${displayTitle.charAt(0).toUpperCase() + displayTitle.slice(1).toLowerCase()}`;
-      headingStyle = ' style="text-decoration: underline;"';
-    }
+    let headingHtml = '';
+    let tocTitle = section.title;
 
-    if (options.showHeadingIcon) {
-      displayTitle = `${options.headingEmoji} ${displayTitle}`;
+    if (section.title) {
+      let displayTitle = section.title;
+      let headingStyle = '';
+      
+      if (options.normalizeHeadings) {
+        displayTitle = `${sIdx + 1}. ${displayTitle.charAt(0).toUpperCase() + displayTitle.slice(1).toLowerCase()}`;
+        headingStyle = ' style="text-decoration: underline;"';
+      }
+
+      if (options.showHeadingIcon) {
+        displayTitle = `${options.headingEmoji} ${displayTitle}`;
+      }
+
+      headingHtml = `    <div style="text-align: center; margin-top: 2em; margin-bottom: 1.5em;">
+      <h2${headingStyle}>${displayTitle}</h2>
+    </div>\n`;
+    } else {
+      tocTitle = sIdx === 0 ? 'Couverture' : `Section ${sIdx + 1}`;
     }
 
     // Build the XHTML contents
@@ -282,16 +293,13 @@ span.sentence-bg {
     const chapterHtml = `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 <head>
-  <title>${section.title}</title>
+  <title>${section.title || doc.title}</title>
   <link rel="stylesheet" type="text/css" href="content.css"/>
   <meta charset="utf-8"/>
 </head>
 <body>
   <section>
-    <div style="text-align: center; margin-top: 2em; margin-bottom: 1.5em;">
-      <h2${headingStyle}>${displayTitle}</h2>
-    </div>
-    ${elementsHtml}
+    ${headingHtml}    ${elementsHtml}
   </section>
 </body>
 </html>`;
@@ -299,7 +307,7 @@ span.sentence-bg {
     zip.file(`OEBPS/${chapterHref}`, chapterHtml);
     chaptersInfo.push({
       id: chapterId,
-      title: section.title,
+      title: tocTitle,
       href: chapterHref
     });
   });

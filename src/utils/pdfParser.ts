@@ -328,67 +328,77 @@ export async function parsePdf(file: File): Promise<ParsedDocument> {
   }
   console.log('[pdfParser] Taille de police principale détectée :', bodyFontSize, 'pt (trouvée', maxCount, 'fois)');
 
-  // 3. Second pass: structure into chapters/sections based on headings
+  // 3. Second pass: structure into chapters/sections based on headings page by page
   console.log('[pdfParser] Structuration des sections et chapitres...');
   const sections: Section[] = [];
   let currentSection: Section = {
-    title: 'Introduction',
+    title: '', // Start with empty title (replaces 'Introduction')
     elements: []
   };
 
-  let lastPageNumWithImages = 0;
+  // Group allLines by page number
+  const linesByPage: { [pageNum: number]: typeof allLines } = {};
+  for (const line of allLines) {
+    if (!linesByPage[line.pageNum]) {
+      linesByPage[line.pageNum] = [];
+    }
+    linesByPage[line.pageNum].push(line);
+  }
 
-  for (let i = 0; i < allLines.length; i++) {
-    const line = allLines[i];
-    const prevLine = i > 0 ? allLines[i - 1] : null;
-
-    // Check if we should insert images from the current page before this paragraph
-    if (line.pageNum !== lastPageNumWithImages) {
-      const images = pageImages[line.pageNum];
-      if (images) {
-        for (const img of images) {
-          currentSection.elements.push({ type: 'image', src: img });
-        }
+  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+    // 1. Insert images for this page
+    const images = pageImages[pageNum];
+    if (images) {
+      console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Insertion de ${images.length} image(s) avant le texte.`);
+      for (const img of images) {
+        currentSection.elements.push({ type: 'image', src: img });
       }
-      lastPageNumWithImages = line.pageNum;
     }
 
-    if (isHeading(line, bodyFontSize)) {
-      // If the current section has elements, save it
-      if (currentSection.elements.length > 0 || currentSection.title !== 'Introduction') {
-        console.log(`[pdfParser] Clôture de la section "${currentSection.title}" avec ${currentSection.elements.length} éléments.`);
-        sections.push(currentSection);
-      }
-      // Start a new section
-      console.log(`[pdfParser] Nouveau chapitre détecté : "${line.text}" (Ligne ${i + 1}, Police: ${line.fontSize}pt)`);
-      currentSection = {
-        title: line.text,
-        elements: []
-      };
-    } else {
-      // Append text. Determine if this line starts a new paragraph or merges with the previous one
-      let isNewParagraph = false;
-
-      if (!prevLine || prevLine.pageNum !== line.pageNum) {
-        // New page, check if previous line ended with paragraph terminator
-        const textEnd = prevLine ? prevLine.text.trim() : '';
-        isNewParagraph = !textEnd || /[.:;?!»"]$/.test(textEnd);
+    // 2. Process text lines for this page
+    const pageLines = linesByPage[pageNum] || [];
+    for (let j = 0; j < pageLines.length; j++) {
+      const line = pageLines[j];
+      
+      if (isHeading(line, bodyFontSize)) {
+        // If the current section has elements or a non-empty title, save it
+        if (currentSection.elements.length > 0 || currentSection.title !== '') {
+          console.log(`[pdfParser] Clôture de la section "${currentSection.title}" avec ${currentSection.elements.length} éléments.`);
+          sections.push(currentSection);
+        }
+        // Start a new section
+        console.log(`[pdfParser] Nouveau chapitre détecté : "${line.text}" (Page ${pageNum}, Police: ${line.fontSize}pt)`);
+        currentSection = {
+          title: line.text,
+          elements: []
+        };
       } else {
-        // Same page, check vertical gap
-        const expectedGap = prevLine.fontSize * 1.5;
-        const actualGap = Math.abs(prevLine.y - line.y);
-        isNewParagraph = actualGap > expectedGap || /[.:;?!»"]$/.test(prevLine.text.trim());
-      }
+        // Normal text line
+        // Determine if we need to start a new paragraph
+        let isNewParagraph = false;
+        
+        // Find the previous text line in allLines
+        const currentLineIndex = allLines.indexOf(line);
+        const prevLine = currentLineIndex > 0 ? allLines[currentLineIndex - 1] : null;
 
-      if (isNewParagraph || currentSection.elements.length === 0) {
-        currentSection.elements.push({ type: 'text', text: line.text });
-      } else {
-        // Merge with the last text element
-        const lastEl = currentSection.elements[currentSection.elements.length - 1];
-        if (lastEl.type === 'text') {
-          lastEl.text += ' ' + line.text;
+        if (!prevLine || prevLine.pageNum !== line.pageNum) {
+          const textEnd = prevLine ? prevLine.text.trim() : '';
+          isNewParagraph = !textEnd || /[.:;?!»"]$/.test(textEnd);
         } else {
+          const expectedGap = prevLine.fontSize * 1.5;
+          const actualGap = Math.abs(prevLine.y - line.y);
+          isNewParagraph = actualGap > expectedGap || /[.:;?!»"]$/.test(prevLine.text.trim());
+        }
+
+        if (isNewParagraph || currentSection.elements.length === 0) {
           currentSection.elements.push({ type: 'text', text: line.text });
+        } else {
+          const lastEl = currentSection.elements[currentSection.elements.length - 1];
+          if (lastEl.type === 'text') {
+            lastEl.text += ' ' + line.text;
+          } else {
+            currentSection.elements.push({ type: 'text', text: line.text });
+          }
         }
       }
     }

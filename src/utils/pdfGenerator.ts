@@ -95,29 +95,7 @@ export async function generatePdf(
   }
 
   // ----------------------------------------------------
-  // Page 1: Cover Page
-  // ----------------------------------------------------
-  const coverPage = createPage();
-  coverPage.style.justifyContent = 'center';
-  coverPage.style.alignItems = 'center';
-  coverPage.style.textAlign = 'center';
-
-  const coverTitle = document.createElement('h1');
-  coverTitle.innerText = doc.title;
-  coverTitle.style.fontSize = `${options.fontSize * 1.8}pt`;
-  coverTitle.style.fontWeight = 'bold';
-  coverTitle.style.marginBottom = '20px';
-  coverTitle.style.color = options.textColor;
-  coverPage.appendChild(coverTitle);
-
-  const coverSubtitle = document.createElement('p');
-  coverSubtitle.innerText = 'Document adapté pour l\'accessibilité de lecture';
-  coverSubtitle.style.fontSize = `${options.fontSize * 0.9}pt`;
-  coverSubtitle.style.opacity = '0.7';
-  coverPage.appendChild(coverSubtitle);
-
-  // ----------------------------------------------------
-  // Subsequent Pages: Content Sections
+  // Content Sections
   // ----------------------------------------------------
   let currentPage = createPage();
 
@@ -129,46 +107,48 @@ export async function generatePdf(
       currentPage = createPage();
     }
 
-    // Render Chapter Title
-    const h2 = document.createElement('h2');
-    let titleText = section.title;
-    if (options.normalizeHeadings) {
-      // Normalize: Numbering + Capitalized first letter only + Underline
-      titleText = `${sIdx + 1}. ${titleText.charAt(0).toUpperCase() + titleText.slice(1).toLowerCase()}`;
-      h2.style.textDecoration = 'underline';
-    }
-    
-    // Add PDF benchmark indicator: replace emoji with '>'
-    if (options.showHeadingIcon) {
-      titleText = `> ${titleText}`;
-    }
-    
-    h2.innerText = titleText;
-    h2.style.fontSize = `${options.fontSize * 1.35}pt`;
-    h2.style.fontWeight = options.headingBold ? 'bold' : 'normal';
-    h2.style.fontStyle = options.headingItalic ? 'italic' : 'normal';
-    h2.style.marginTop = '0px';
-    h2.style.marginBottom = `${options.paragraphSpacing * 1.25}px`;
-    h2.style.color = options.useHeadingCustomColor ? options.headingColor : options.textColor;
-    h2.style.textAlign = 'center';
+    // Render Chapter Title (only if it exists)
+    if (section.title) {
+      const h2 = document.createElement('h2');
+      let titleText = section.title;
+      if (options.normalizeHeadings) {
+        // Normalize: Numbering + Capitalized first letter only + Underline
+        titleText = `${sIdx + 1}. ${titleText.charAt(0).toUpperCase() + titleText.slice(1).toLowerCase()}`;
+        h2.style.textDecoration = 'underline';
+      }
+      
+      // Add PDF benchmark indicator: replace emoji with '>'
+      if (options.showHeadingIcon) {
+        titleText = `> ${titleText}`;
+      }
+      
+      h2.innerText = titleText;
+      h2.style.fontSize = `${options.fontSize * 1.35}pt`;
+      h2.style.fontWeight = options.headingBold ? 'bold' : 'normal';
+      h2.style.fontStyle = options.headingItalic ? 'italic' : 'normal';
+      h2.style.marginTop = '0px';
+      h2.style.marginBottom = `${options.paragraphSpacing * 1.25}px`;
+      h2.style.color = options.useHeadingCustomColor ? options.headingColor : options.textColor;
+      h2.style.textAlign = 'center';
 
-    if (options.useHeadingBgColor) {
-      h2.style.backgroundColor = options.headingBgColor;
-      h2.style.padding = '8px 16px';
-      h2.style.display = 'inline-block';
-      h2.style.border = '2px solid #000';
-      h2.style.boxShadow = '2px 2px 0px #000';
-      h2.style.alignSelf = 'center';
-    } else {
-      h2.style.backgroundColor = 'transparent';
-      h2.style.alignSelf = 'stretch';
-    }
-    
-    if (checkOverflow(currentPage, h2)) {
-      // If the heading alone overflows the empty page, force add it
-      currentPage.appendChild(h2);
-    } else {
-      currentPage.appendChild(h2);
+      if (options.useHeadingBgColor) {
+        h2.style.backgroundColor = options.headingBgColor;
+        h2.style.padding = '8px 16px';
+        h2.style.display = 'inline-block';
+        h2.style.border = '2px solid #000';
+        h2.style.boxShadow = '2px 2px 0px #000';
+        h2.style.alignSelf = 'center';
+      } else {
+        h2.style.backgroundColor = 'transparent';
+        h2.style.alignSelf = 'stretch';
+      }
+      
+      if (checkOverflow(currentPage, h2)) {
+        // If the heading alone overflows the empty page, force add it
+        currentPage.appendChild(h2);
+      } else {
+        currentPage.appendChild(h2);
+      }
     }
 
     // Process elements in this section
