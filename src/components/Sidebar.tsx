@@ -127,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isConverting = fileType !== options.outputFormat;
 
   return (
-    <aside className="w-80 h-full flex flex-col bg-zinc-900 border-r-[3px] border-black flex-shrink-0 select-none overflow-hidden relative">
+    <aside className="editor-sidebar flex flex-col bg-zinc-900 flex-shrink-0 select-none overflow-hidden relative">
       <div className="absolute inset-0 halftone-overlay pointer-events-none opacity-[0.03] z-0"></div>
 
       {/* File Card Info */}

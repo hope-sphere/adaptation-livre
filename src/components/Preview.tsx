@@ -27,7 +27,7 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
   };
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden bg-zinc-900 border-l-[3px] border-black relative">
+    <div className="editor-preview flex flex-col overflow-hidden bg-zinc-900 relative">
       <div className="absolute inset-0 halftone-overlay pointer-events-none opacity-[0.02] z-0"></div>
 
       {/* Stats Banner */}

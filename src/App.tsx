@@ -189,7 +189,7 @@ export default function App() {
           </div>
         ) : (
           /* Editor Split Layout (Side-by-side columns: left sidebar, right preview) */
-          <div className="h-full w-full flex overflow-hidden">
+          <div className="editor-container">
             <Sidebar
               options={options}
               onChangeOptions={setOptions}
