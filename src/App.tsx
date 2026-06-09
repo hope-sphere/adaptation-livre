@@ -76,7 +76,7 @@ export default function App() {
     setFileType(type);
     setDocument(null);
     setIsAnalyzing(true);
-    addToast("Analyse du document...", "info");
+    addToast("Début de l'analyse du document...", "info");
 
     try {
       let parsedDoc: ParsedDocument;
@@ -87,7 +87,6 @@ export default function App() {
       }
 
       setDocument(parsedDoc);
-      // Synchronize initial output format with input format
       setOptions((prev) => ({
         ...prev,
         outputFormat: type
@@ -137,17 +136,18 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-zinc-950 text-zinc-100 relative">
+      <div className="absolute inset-0 halftone-overlay pointer-events-none opacity-[0.03] z-0"></div>
       
       {/* App Header */}
-      <header className="h-16 border-b border-white/5 bg-zinc-900/60 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10 select-none">
+      <header className="h-16 border-b-[3px] border-black bg-zinc-900 flex items-center justify-between px-6 flex-shrink-0 z-10 select-none relative">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400">
+          <div className="p-2 bg-purple-500 border-2 border-black text-black shadow-[2px_2px_0px_#000]">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-sm tracking-wide text-white">Adaptation Livre</h1>
-            <p className="text-[10px] text-white/40 font-medium">Reformatage &amp; Accessibilité de lecture</p>
+            <h1 className="font-extrabold text-lg tracking-widest text-white comic-title">ADAPTATION LIVRE</h1>
+            <p className="text-[9px] text-yellow-400 font-extrabold uppercase tracking-widest mt-0.5">Reformatage &amp; Accessibilité</p>
           </div>
         </div>
 
@@ -155,36 +155,34 @@ export default function App() {
         {document && (
           <button
             onClick={handleExport}
-            className="glow-btn px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-lg shadow-purple-900/10 transition-all"
+            className="comic-btn comic-btn-secondary py-1.5 px-4 text-xs font-bold gap-2"
           >
-            <Download className="w-3.5 h-3.5" /> Convertir &amp; Télécharger
+            <Download className="w-3.5 h-3.5" /> CONVERTIR &amp; TÉLÉCHARGER
           </button>
         )}
       </header>
 
       {/* Main Workspace */}
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-hidden relative z-10 flex">
         {isAnalyzing && (
-          <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center space-y-4">
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-            </div>
-            <div className="text-center">
-              <h4 className="font-semibold text-white">Analyse du document...</h4>
-              <p className="text-xs text-white/40 mt-1">Extraction de la structure et du contenu...</p>
+          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center space-y-4">
+            <div className="comic-panel p-6 bg-yellow-400 text-black border-3 border-black shadow-[6px_6px_0px_#000] flex flex-col items-center space-y-3 max-w-xs text-center">
+              <Loader2 className="w-8 h-8 text-black animate-spin" />
+              <h4 className="font-extrabold text-sm uppercase tracking-wide">ANALYSE DU DOCUMENT...</h4>
+              <p className="text-[11px] font-bold text-black/70">Extraction intelligente de la structure, des chapitres et des illustrations en cours...</p>
             </div>
           </div>
         )}
 
         {!document ? (
           /* Landing Page / File Uploader */
-          <div className="h-full overflow-y-auto">
+          <div className="h-full w-full overflow-y-auto">
             <div className="py-12">
               <Dropzone onFileSelect={handleFileSelect} isAnalyzing={isAnalyzing} />
             </div>
           </div>
         ) : (
-          /* Editor Split Layout */
+          /* Editor Split Layout (Side-by-side columns: left sidebar, right preview) */
           <div className="h-full w-full flex overflow-hidden">
             <Sidebar
               options={options}
@@ -200,28 +198,33 @@ export default function App() {
       </main>
 
       {/* Toast Notification Container */}
-      <div className="absolute bottom-6 right-6 z-50 flex flex-col gap-2 max-w-sm w-full select-none pointer-events-none">
+      <div className="absolute bottom-6 right-6 z-50 flex flex-col gap-3.5 max-w-sm w-full select-none pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-xl animate-fade-in ${
+            className={`pointer-events-auto flex items-start gap-3 p-3.5 border-2 border-black shadow-[4px_4px_0px_#000] animate-fade-in ${
               toast.type === 'success'
-                ? 'bg-emerald-950/80 border-emerald-500/30 text-emerald-200'
+                ? 'bg-emerald-400 text-black'
                 : toast.type === 'error'
-                ? 'bg-red-950/80 border-red-500/30 text-red-200'
-                : 'bg-zinc-900/90 border-white/10 text-zinc-200'
+                ? 'bg-rose-400 text-black'
+                : 'bg-cyan-300 text-black'
             }`}
           >
-            <div className="flex-shrink-0 mt-0.5">
+            <div className="flex-shrink-0 mt-0.5 bg-black/10 p-1 rounded-none border border-black/20">
               {toast.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-black" />
               ) : toast.type === 'error' ? (
-                <AlertCircle className="w-4 h-4 text-red-400" />
+                <AlertCircle className="w-4 h-4 text-black" />
               ) : (
-                <Info className="w-4 h-4 text-purple-400" />
+                <Info className="w-4 h-4 text-black" />
               )}
             </div>
-            <p className="text-xs font-medium leading-normal">{toast.message}</p>
+            <div>
+              <span className="block text-[9px] font-extrabold uppercase tracking-wider text-black/60 mb-0.5">
+                {toast.type === 'success' ? 'SUCCÈS !' : toast.type === 'error' ? 'ERREUR !' : 'INFO !'}
+              </span>
+              <p className="text-xs font-bold leading-normal">{toast.message}</p>
+            </div>
           </div>
         ))}
       </div>

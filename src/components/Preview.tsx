@@ -21,34 +21,35 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
   const getHeadingText = (title: string, index: number) => {
     let text = title;
     if (options.normalizeHeadings) {
-      // Normalize: 1. Title lowercase except first letter
       text = `${index + 1}. ${text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()}`;
     }
     return text;
   };
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-zinc-900 border-l-[3px] border-black relative">
+      <div className="absolute inset-0 halftone-overlay pointer-events-none opacity-[0.02] z-0"></div>
+
       {/* Stats Banner */}
-      <div className="px-6 py-3 bg-white/[0.02] border-b border-white/5 flex items-center justify-between text-xs text-white/50 flex-shrink-0">
+      <div className="px-6 py-3.5 bg-zinc-950 border-b-[3px] border-black flex items-center justify-between text-xs flex-shrink-0 z-10">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
+          <span className="comic-bubble bg-purple-500/10 text-white border-black flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#000]">
             <BookOpen className="w-3.5 h-3.5 text-purple-400" />
-            <strong className="text-white/80">{doc.sections.length}</strong> section{doc.sections.length > 1 ? 's' : ''}
+            <span><strong className="text-white">{doc.sections.length}</strong> Section{doc.sections.length > 1 ? 's' : ''}</span>
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="comic-bubble bg-blue-500/10 text-white border-black flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#000]">
             <FileText className="w-3.5 h-3.5 text-blue-400" />
-            <strong className="text-white/80">{totalParagraphs}</strong> paragraphe{totalParagraphs > 1 ? 's' : ''}
+            <span><strong className="text-white">{totalParagraphs}</strong> Paragraphe{totalParagraphs > 1 ? 's' : ''}</span>
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-[10px] font-medium">
-          <CheckCircle className="w-3 h-3" /> Synchronisé en direct
+        <div className="comic-bubble bg-emerald-400 text-black border-black font-extrabold uppercase tracking-wide text-[10px] shadow-[2px_2px_0px_#000] flex items-center gap-1.5">
+          <CheckCircle className="w-3.5 h-3.5" /> Synchronisé en direct
         </div>
       </div>
 
-      {/* Book Content Preview Area */}
+      {/* Book Content Preview Area (Fixed height scroll container) */}
       <div 
-        className="flex-1 overflow-y-auto p-12 transition-all duration-300"
+        className="flex-1 overflow-y-auto p-12 transition-all duration-300 z-10 scrollbar-thin scroll-smooth"
         style={{
           backgroundColor: options.bgColor,
           color: options.textColor,
@@ -59,18 +60,20 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
           textAlign: options.alignment,
         }}
       >
-        <div className="max-w-2xl mx-auto space-y-12 pb-24">
+        <div className="max-w-2xl mx-auto space-y-12 pb-32">
           {/* Document Main Title (Simulated Book Title) */}
-          <div className="border-b border-current/10 pb-8 text-center">
+          <div className="border-b-[3px] border-current/25 pb-8 text-center">
             <h1 
-              style={{ fontSize: '1.8em', color: options.textColor }} 
-              className="font-bold mb-2 tracking-tight"
+              style={{ fontSize: '2em', color: options.textColor }} 
+              className="font-extrabold mb-3 tracking-tight leading-tight uppercase"
             >
               {doc.title}
             </h1>
-            <p className="text-xs opacity-60 italic">
-              Adaptation de lecture accessibilité
-            </p>
+            <span 
+              className="comic-bubble bg-zinc-950 text-white border-current/40 text-[10px] font-bold uppercase py-0.5 px-3 shadow-[1.5px_1.5px_0px_currentColor]"
+            >
+              Aperçu Adapté
+            </span>
           </div>
 
           {/* Chapters Render */}
@@ -82,22 +85,22 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
                 {/* Chapter Heading */}
                 <h2
                   style={{
-                    fontSize: '1.35em',
+                    fontSize: '1.4em',
                     fontWeight: 'bold',
                     textDecoration: options.normalizeHeadings ? 'underline' : 'none',
                     color: options.textColor,
-                    marginTop: '2em'
+                    marginTop: '2.5em'
                   }}
-                  className="mb-4 text-center leading-snug"
+                  className="mb-5 text-center leading-snug"
                 >
                   {options.showHeadingIcon && (
-                    <span className="mr-2 inline-block select-none">{options.headingEmoji}</span>
+                    <span className="mr-2.5 inline-block select-none">{options.headingEmoji}</span>
                   )}
                   {headingText}
                 </h2>
 
                 {/* Chapter Elements (Paragraphs and Images) */}
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {section.elements.map((el, elIdx) => {
                     if (el.type === 'image') {
                       if (options.suppressImages) return null;
@@ -106,7 +109,7 @@ export const Preview: React.FC<PreviewProps> = ({ document: doc, options }) => {
                           <img
                             src={el.src}
                             alt="Illustration"
-                            className="max-h-96 max-w-full rounded-lg object-contain shadow-sm border border-current/5"
+                            className="max-h-96 max-w-full rounded-none object-contain border-[3px] border-black shadow-[4px_4px_0px_#000]"
                             style={{ margin: `${options.paragraphSpacing}px 0` }}
                           />
                         </div>

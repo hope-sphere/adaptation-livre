@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Abyssinica+SIL&family=Lexend:wght@300;400;500;600;700&family=Zilla+Slab:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abyssinica+SIL&family=Lexend:wght@300;400;500;600;700&family=Zilla+Slab:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Comic+Neue:wght@400;700&family=Bangers&display=swap');
 
 /* Declaration of Local Fonts */
 
@@ -100,29 +100,34 @@
   font-style: italic;
 }
 
-/* Design Tokens (Sleek Dark Premium Design) */
+/* Design Tokens (Premium Pop-Art Comic Book Design) */
 :root {
-  --background: 240 10% 3.9%;
+  --background: 40 12% 8%; /* Very dark warm gray */
   --foreground: 0 0% 98%;
-  --card: 240 10% 6.5%;
+  --card: 40 10% 12%; /* Card background */
   --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
+  --popover: 40 12% 8%;
   --popover-foreground: 0 0% 98%;
-  --primary: 263.4 75% 58%;
-  --primary-hover: 263.4 80% 64%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 240 5% 15%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 5% 12%;
-  --muted-foreground: 240 5% 65%;
-  --accent: 263.4 75% 58%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5% 16%;
-  --input: 240 5% 16%;
-  --ring: 263.4 75% 58%;
-  --radius: 0.75rem;
+  
+  /* Bold Comic colors */
+  --primary: 263.4 85% 64%; /* Vibrant purple */
+  --primary-hover: 263.4 90% 70%;
+  --primary-foreground: 0 0% 0%; /* Black text on buttons */
+  
+  --secondary: 48 96% 53%; /* Bright comic yellow */
+  --secondary-foreground: 0 0% 0%;
+  
+  --muted: 40 5% 18%;
+  --muted-foreground: 40 5% 68%;
+  --accent: 343 90% 60%; /* Bright comic pink */
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 0%; /* Black borders everywhere */
+  --input: 40 10% 16%;
+  --ring: 263.4 85% 64%;
+  --radius: 0px; /* Sharp neobrutalist corners */
   
   color-scheme: dark;
 }
@@ -135,131 +140,222 @@
 }
 
 body {
-  font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  font-family: 'Comic Neue', 'Lexend', system-ui, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: hsl(var(--background));
+  border-left: 2px solid #000;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.5);
+  border: 2px solid #000;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--secondary));
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.5deg); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-pulse-slow {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom classes for the reformatting app */
-.glass-panel {
-  background: hsl(var(--card) / 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--border) / 0.5);
-}
-
-.glow-btn {
-  position: relative;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.glow-btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: skewX(-25deg);
-  transition: 0.75s;
-  opacity: 0;
-}
-
-.glow-btn:hover::after {
-  left: 125%;
-  opacity: 1;
-}
-
-/* Syllabification Colors */
-.syllable-a {
-  color: inherit;
-}
-.syllable-b {
-  color: inherit;
-}
-
-/* Word Colors */
-.word-a {
-  color: inherit;
-}
-.word-b {
-  color: inherit;
-}
-
-/* Form Styles */
-input, select, textarea {
-  background-color: hsl(var(--input) / 0.5);
-  border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground));
-  border-radius: var(--radius);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+/* Comic Book UI Utility Classes */
+.comic-panel {
+  background: hsl(var(--card));
+  border: 3px solid #000;
+  box-shadow: 5px 5px 0px 0px #000;
   transition: all 0.2s ease;
+}
+
+.comic-panel-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px 0px #000;
+}
+
+.comic-btn {
+  background: hsl(var(--primary));
+  color: #000;
+  border: 3px solid #000;
+  box-shadow: 3px 3px 0px 0px #000;
+  font-family: 'Bangers', cursive;
+  font-size: 1.1rem;
+  letter-spacing: 1.5px;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.1s ease;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comic-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #000;
+  background-color: hsl(var(--primary-hover));
+}
+
+.comic-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #000;
+}
+
+.comic-btn-secondary {
+  background: hsl(var(--secondary));
+}
+.comic-btn-secondary:hover {
+  background: hsl(48 96% 60%);
+}
+
+.comic-btn-destructive {
+  background: hsl(var(--destructive));
+  color: #fff;
+}
+.comic-btn-destructive:hover {
+  background: hsl(0 85% 65%);
+}
+
+.comic-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 3px 3px 0px 0px #000 !important;
+}
+
+/* Hard outlines */
+.comic-border {
+  border: 2px solid #000;
+}
+
+.comic-shadow {
+  box-shadow: 3px 3px 0px 0px #000;
+}
+
+.comic-title {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0px #000;
+  color: #fff;
+}
+
+/* Halftone Background overlay */
+.halftone-overlay {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 15%, transparent 15%);
+  background-size: 14px 14px;
+  background-position: 0 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Neobrutalist speech bubble badge */
+.comic-bubble {
+  position: relative;
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+  padding: 0.25rem 0.75rem;
+  font-family: 'Comic Neue', sans-serif;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px 0px #000;
+}
+
+/* Custom form fields */
+input, select, textarea {
+  background-color: #fff;
+  border: 2px solid #000;
+  color: #000;
+  border-radius: 0px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: 'Comic Neue', sans-serif;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px 0px #000;
   outline: none;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+  background-color: #fef08a; /* soft comic yellow background when focused */
+  box-shadow: 3px 3px 0px 0px #000;
 }
 
-button {
-  cursor: pointer;
+input[type="range"] {
+  box-shadow: none;
   border: none;
-  border-radius: var(--radius);
-  font-weight: 500;
-  transition: all 0.2s ease;
+  background: transparent;
+  height: 24px;
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: #000;
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 0;
+  background: hsl(var(--secondary));
+  border: 2.5px solid #000;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -6px;
+  box-shadow: 1.5px 1.5px 0px #000;
+}
+
+/* Toggle checkbox custom styling */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #000;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 1.5px 1.5px 0px #000;
+  display: inline-grid;
+  place-content: center;
+}
+
+input[type="checkbox"]::before {
+  content: "✓";
+  transform: scale(0);
+  transition: 100ms transform ease-in-out;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #000;
+}
+
+input[type="checkbox"]:checked {
+  background: hsl(var(--secondary));
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
 }
 
 /* PDF rendering hidden wrapper */
@@ -267,7 +363,7 @@ button:disabled {
   position: absolute;
   left: -9999px;
   top: -9999px;
-  width: 794px; /* A4 width at 96 DPI */
+  width: 794px;
   background: white;
   color: black;
   box-sizing: border-box;
@@ -275,7 +371,7 @@ button:disabled {
 
 .pdf-page-container {
   width: 794px;
-  height: 1123px; /* A4 height at 96 DPI */
+  height: 1123px;
   padding: 60px 50px;
   box-sizing: border-box;
   position: relative;
@@ -286,11 +382,16 @@ button:disabled {
 
 /* Grid of features */
 .feature-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease-out;
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  border-color: hsl(var(--primary) / 0.5);
-  box-shadow: 0 8px 30px hsl(var(--primary) / 0.08);
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px 0px #000 !important;
+}
+
+/* Slanted banner badge */
+.slanted-badge {
+  transform: rotate(-2deg);
+  display: inline-block;
 }
