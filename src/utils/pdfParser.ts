@@ -54,9 +54,38 @@ async function pdfImageToBase64(img: any): Promise<string> {
         return;
       }
 
+      // Check if there is a bitmap property (ImageBitmap) in the image object
+      if (img.bitmap) {
+        console.log('[pdfParser] [pdfImageToBase64] ImageBitmap détecté dans img.bitmap. Dessin direct sur le canvas...');
+        ctx.drawImage(img.bitmap, 0, 0);
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('[pdfParser] [pdfImageToBase64] Conversion ImageBitmap réussie, longueur Base64 :', base64.length);
+        resolve(base64);
+        return;
+      }
+
+      // Fallback: Check if the image itself is directly drawable (ImageBitmap, HTMLImageElement, HTMLCanvasElement)
+      if (typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap) {
+        console.log('[pdfParser] [pdfImageToBase64] L\'objet image est un ImageBitmap. Dessin direct sur le canvas...');
+        ctx.drawImage(img, 0, 0);
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('[pdfParser] [pdfImageToBase64] Conversion directe ImageBitmap réussie, longueur Base64 :', base64.length);
+        resolve(base64);
+        return;
+      }
+
+      if (img instanceof HTMLImageElement || img instanceof HTMLCanvasElement) {
+        console.log('[pdfParser] [pdfImageToBase64] L\'objet image est un élément Image/Canvas HTML. Dessin direct...');
+        ctx.drawImage(img, 0, 0);
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('[pdfParser] [pdfImageToBase64] Conversion directe HTML réussie, longueur Base64 :', base64.length);
+        resolve(base64);
+        return;
+      }
+
       const srcData = img.data;
       if (!srcData) {
-        console.warn('[pdfParser] [pdfImageToBase64] Données d\'image (img.data) manquantes.');
+        console.warn('[pdfParser] [pdfImageToBase64] Données d\'image (img.data) et bitmap manquants. L\'image ne peut pas être convertie.');
         resolve('');
         return;
       }
