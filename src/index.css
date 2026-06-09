@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Abyssinica+SIL&family=Lexend:wght@300;400;500;600;700&family=Zilla+Slab:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+
+/* Declaration of Local Fonts */
+
+/* Luciole */
+@font-face {
+  font-family: 'Luciole';
+  src: url('./assets/fonts/Luciole-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Luciole';
+  src: url('./assets/fonts/Luciole-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Luciole';
+  src: url('./assets/fonts/Luciole-Regular-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Luciole';
+  src: url('./assets/fonts/Luciole-Bold-Italic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* Sylexiad Serif Thin */
+@font-face {
+  font-family: 'Sylexiad Serif Thin';
+  src: url('./assets/fonts/SylexiadSerifThin.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Sylexiad Serif Thin';
+  src: url('./assets/fonts/SylexiadSerifThin-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Sylexiad Serif Thin';
+  src: url('./assets/fonts/SylexiadSerifThin-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Sylexiad Serif Thin';
+  src: url('./assets/fonts/SylexiadSerifThin-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* TT Interphases Pro Trial Light */
+@font-face {
+  font-family: 'TT Interphases Pro Trial Light';
+  src: url('./assets/fonts/TT Interphases Pro Trial Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'TT Interphases Pro Trial Light';
+  src: url('./assets/fonts/TT Interphases Pro Trial Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'TT Interphases Pro Trial Light';
+  src: url('./assets/fonts/TT Interphases Pro Trial Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'TT Interphases Pro Trial Light';
+  src: url('./assets/fonts/TT Interphases Pro Trial Light Italic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+/* Caldina (Outfit Alternative) */
+@font-face {
+  font-family: 'Caldina';
+  src: url('./assets/fonts/Outfit-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+/* Squad (Cabin Alternative) */
+@font-face {
+  font-family: 'Squad';
+  src: url('./assets/fonts/Cabin[wdth,wght].ttf') format('truetype');
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Squad';
+  src: url('./assets/fonts/Cabin-Italic[wdth,wght].ttf') format('truetype');
+  font-style: italic;
+}
+
+/* Design Tokens (Sleek Dark Premium Design) */
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 6.5%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 263.4 75% 58%;
+  --primary-hover: 263.4 80% 64%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 240 5% 15%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 5% 12%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 263.4 75% 58%;
+  --accent-foreground: 210 20% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5% 16%;
+  --input: 240 5% 16%;
+  --ring: 263.4 75% 58%;
+  --radius: 0.75rem;
+  
+  color-scheme: dark;
+}
+
+/* Global Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom classes for the reformatting app */
+.glass-panel {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.glow-btn {
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.glow-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+  opacity: 0;
+}
+
+.glow-btn:hover::after {
+  left: 125%;
+  opacity: 1;
+}
+
+/* Syllabification Colors */
+.syllable-a {
+  color: inherit;
+}
+.syllable-b {
+  color: inherit;
+}
+
+/* Word Colors */
+.word-a {
+  color: inherit;
+}
+.word-b {
+  color: inherit;
+}
+
+/* Form Styles */
+input, select, textarea {
+  background-color: hsl(var(--input) / 0.5);
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* PDF rendering hidden wrapper */
+#pdf-render-wrapper {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 794px; /* A4 width at 96 DPI */
+  background: white;
+  color: black;
+  box-sizing: border-box;
+}
+
+.pdf-page-container {
+  width: 794px;
+  height: 1123px; /* A4 height at 96 DPI */
+  padding: 60px 50px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid of features */
+.feature-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 8px 30px hsl(var(--primary) / 0.08);
+}
