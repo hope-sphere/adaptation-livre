@@ -83,15 +83,19 @@ export default function App() {
     setDocument(null);
     setIsAnalyzing(true);
     addToast("Début de l'analyse du document...", "info");
+    console.log('[App] Fichier sélectionné :', selectedFile.name, 'Taille :', selectedFile.size, 'octets, type détecté :', type);
 
     try {
       let parsedDoc: ParsedDocument;
       if (type === 'pdf') {
+        console.log('[App] Appel du parseur PDF...');
         parsedDoc = await parsePdf(selectedFile);
       } else {
+        console.log('[App] Appel du parseur EPUB...');
         parsedDoc = await parseEpub(selectedFile);
       }
 
+      console.log('[App] Analyse complétée avec succès. Structure du document :', parsedDoc);
       setDocument(parsedDoc);
       setOptions((prev) => ({
         ...prev,
@@ -101,12 +105,13 @@ export default function App() {
       addToast("Conversion réussie !", "success");
       addToast(`${parsedDoc.sections.length} sections trouvées avec succès.`, "success");
     } catch (err: any) {
-      console.error(err);
+      console.error('[App] Erreur critique capturée lors de l\'analyse du document :', err);
       addToast(err?.message || "Erreur lors de l'analyse du document.", "error");
       setFile(null);
       setFileSize('');
       setFileType(null);
     } finally {
+      console.log('[App] Fin du processus d\'analyse (desactivation de la popup de chargement).');
       setIsAnalyzing(false);
     }
   };

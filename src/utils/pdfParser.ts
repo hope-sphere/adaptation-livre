@@ -42,17 +42,21 @@ async function pdfImageToBase64(img: any): Promise<string> {
         return;
       }
 
+      console.log('[pdfParser] [pdfImageToBase64] Début de la conversion en canvas, dimensions :', width, 'x', height);
+
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (!ctx) {
+        console.warn('[pdfParser] [pdfImageToBase64] Impossible d\'obtenir le contexte 2D du canvas.');
         resolve('');
         return;
       }
 
       const srcData = img.data;
       if (!srcData) {
+        console.warn('[pdfParser] [pdfImageToBase64] Données d\'image (img.data) manquantes.');
         resolve('');
         return;
       }
@@ -87,9 +91,11 @@ async function pdfImageToBase64(img: any): Promise<string> {
       }
 
       ctx.putImageData(imgData, 0, 0);
-      resolve(canvas.toDataURL('image/jpeg', 0.8));
+      const base64 = canvas.toDataURL('image/jpeg', 0.8);
+      console.log('[pdfParser] [pdfImageToBase64] Conversion réussie, longueur Base64 :', base64.length);
+      resolve(base64);
     } catch (err) {
-      console.error('Error converting PDF image to base64:', err);
+      console.error('[pdfParser] [pdfImageToBase64] Erreur lors de la conversion de l\'image en base64:', err);
       resolve('');
     }
   });
@@ -155,17 +161,25 @@ function isHeading(line: { text: string; fontSize: number }, bodyFontSize: numbe
 }
 
 export async function parsePdf(file: File): Promise<ParsedDocument> {
+  console.log('[pdfParser] Début de l\'analyse du fichier PDF :', file.name, 'Taille :', (file.size / 1024 / 1024).toFixed(2), 'Mo');
+  console.log('[pdfParser] Worker PDF.js configuré sur :', pdfjs.GlobalWorkerOptions.workerSrc);
+  
+  console.log('[pdfParser] Lecture du fichier sous forme d\'ArrayBuffer...');
   const arrayBuffer = await file.arrayBuffer();
+  console.log('[pdfParser] Lancement de la tâche de chargement PDF.js...');
   const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
   const pdfDoc = await loadingTask.promise;
 
   const totalPages = pdfDoc.numPages;
+  console.log('[pdfParser] Document PDF chargé avec succès. Nombre total de pages :', totalPages);
   const allLines: { text: string; fontSize: number; y: number; pageNum: number }[] = [];
   const pageImages: { [pageNum: number]: string[] } = {};
 
   // 1. First pass: extract text lines and images page by page
   for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+    console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Début de l'analyse...`);
     const page = await pdfDoc.getPage(pageNum);
+    console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Récupération du contenu textuel...`);
     const textContent = await page.getTextContent();
     const items = textContent.items.filter((item): item is any => 'str' in item);
 
@@ -205,40 +219,72 @@ export async function parsePdf(file: File): Promise<ParsedDocument> {
     }
 
     allLines.push(...pageLines);
+    console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Extraction de texte complétée. Lignes trouvées :`, pageLines.length);
 
     // Extract images from this page
     const images: string[] = [];
     try {
+      console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Chargement de la liste des opérateurs pour recherche d'images...`);
       const opList = await page.getOperatorList();
+      console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Opérateurs chargés. Recherche d'images (paintImageXObject / paintInlineImageXObject)...`);
+      
       for (let i = 0; i < opList.fnArray.length; i++) {
         const fn = opList.fnArray[i];
         if (fn === (pdfjs as any).OPS.paintImageXObject || fn === (pdfjs as any).OPS.paintInlineImageXObject) {
           const imgKey = opList.argsArray[i][0];
+          console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Image détectée (Clé : ${imgKey}). Résolution de l'objet...`);
+          
           try {
-            const img = await new Promise<any>((resolveImg, rejectImg) => {
+            // Promise with safety timeout to prevent hanging on corrupted/missing images
+            const img = await new Promise<any>((resolveImg) => {
+              let resolved = false;
+              const timeoutId = setTimeout(() => {
+                if (!resolved) {
+                  resolved = true;
+                  console.warn(`[pdfParser] [Page ${pageNum}/${totalPages}] TIMEOUT (2s) lors du chargement de l'image "${imgKey}". L'image sera ignorée.`);
+                  resolveImg(null);
+                }
+              }, 2000);
+
               page.objs.get(imgKey, (obj: any) => {
-                if (obj) resolveImg(obj);
-                else rejectImg('Image not found in page.objs');
+                if (!resolved) {
+                  resolved = true;
+                  clearTimeout(timeoutId);
+                  if (obj) {
+                    console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Image "${imgKey}" résolue avec succès (largeur : ${obj.width}, hauteur : ${obj.height}).`);
+                    resolveImg(obj);
+                  } else {
+                    console.warn(`[pdfParser] [Page ${pageNum}/${totalPages}] L'image "${imgKey}" est null ou non définie.`);
+                    resolveImg(null);
+                  }
+                }
               });
             });
+
             if (img) {
+              console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Conversion en Base64 de l'image "${imgKey}"...`);
               const base64 = await pdfImageToBase64(img);
-              if (base64) images.push(base64);
+              if (base64) {
+                images.push(base64);
+              }
             }
           } catch (e) {
-            // Silently swallow paint image resolution errors
+            console.error(`[pdfParser] [Page ${pageNum}/${totalPages}] Erreur lors de la résolution de l'image "${imgKey}":`, e);
           }
         }
       }
     } catch (e) {
-      console.warn(`Could not parse operator list on page ${pageNum}:`, e);
+      console.warn(`[pdfParser] Impossible d'analyser la liste d'opérateurs sur la page ${pageNum}:`, e);
     }
+    
     if (images.length > 0) {
+      console.log(`[pdfParser] [Page ${pageNum}/${totalPages}] Total d'images valides extraites sur la page :`, images.length);
       pageImages[pageNum] = images;
     }
   }
 
   // 2. Determine the most frequent font size (assumed body font size)
+  console.log('[pdfParser] Calcul de la taille de police principale (corps du texte)...');
   const fontSizes = allLines.map(l => Math.round(l.fontSize));
   const sizeCounts: { [size: number]: number } = {};
   let maxCount = 0;
@@ -251,8 +297,10 @@ export async function parsePdf(file: File): Promise<ParsedDocument> {
       bodyFontSize = size;
     }
   }
+  console.log('[pdfParser] Taille de police principale détectée :', bodyFontSize, 'pt (trouvée', maxCount, 'fois)');
 
   // 3. Second pass: structure into chapters/sections based on headings
+  console.log('[pdfParser] Structuration des sections et chapitres...');
   const sections: Section[] = [];
   let currentSection: Section = {
     title: 'Introduction',
@@ -279,9 +327,11 @@ export async function parsePdf(file: File): Promise<ParsedDocument> {
     if (isHeading(line, bodyFontSize)) {
       // If the current section has elements, save it
       if (currentSection.elements.length > 0 || currentSection.title !== 'Introduction') {
+        console.log(`[pdfParser] Clôture de la section "${currentSection.title}" avec ${currentSection.elements.length} éléments.`);
         sections.push(currentSection);
       }
       // Start a new section
+      console.log(`[pdfParser] Nouveau chapitre détecté : "${line.text}" (Ligne ${i + 1}, Police: ${line.fontSize}pt)`);
       currentSection = {
         title: line.text,
         elements: []
@@ -317,12 +367,14 @@ export async function parsePdf(file: File): Promise<ParsedDocument> {
 
   // Save the last section
   if (currentSection.elements.length > 0 || sections.length === 0) {
+    console.log(`[pdfParser] Clôture du dernier chapitre "${currentSection.title}" avec ${currentSection.elements.length} éléments.`);
     sections.push(currentSection);
   }
 
   // Deduce document title from name or first section title
   const cleanDocTitle = file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
 
+  console.log('[pdfParser] Analyse PDF complétée avec succès ! Titre deduit :', cleanDocTitle, 'Sections :', sections.length);
   return {
     title: cleanDocTitle,
     sections

@@ -18,10 +18,14 @@ function resolveRelativePath(baseFile: string, relativePath: string): string {
 }
 
 export async function parseEpub(file: File): Promise<ParsedDocument> {
+  console.log('[epubParser] Début de l\'analyse du fichier EPUB :', file.name, 'Taille :', (file.size / 1024 / 1024).toFixed(2), 'Mo');
+  
+  console.log('[epubParser] Décompression de l\'archive ZIP...');
   const arrayBuffer = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(arrayBuffer);
 
   // 1. Read container.xml to locate the OPF file path
+  console.log('[epubParser] Lecture du fichier container de configuration (META-INF/container.xml)...');
   const containerFile = zip.file('META-INF/container.xml');
   if (!containerFile) {
     throw new Error('Invalid EPUB: META-INF/container.xml missing.');
@@ -38,8 +42,10 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
 
   // Determine base folder inside zip for OPF elements (usually OEBPS/ or EPUB/ or empty)
   const basePath = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+  console.log('[epubParser] Fichier container XML lu. Chemin OPF :', opfPath, '| Répertoire de base :', basePath || '(racine)');
 
   // 2. Parse OPF file (metadata, manifest, spine)
+  console.log('[epubParser] Lecture du fichier OPF...');
   const opfFile = zip.file(opfPath);
   if (!opfFile) {
     throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}.`);
@@ -73,24 +79,38 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
     }
   });
 
+  console.log('[epubParser] OPF parsé avec succès. Titre du livre :', bookTitle, '| Manifest items :', Object.keys(manifestItems).length, '| Éléments de lecture dans le spine :', spineIds.length);
+
   const sections: Section[] = [];
   let chapterIndex = 1;
 
   // 3. Process each HTML file in the spine order
-  for (const spineId of spineIds) {
+  for (let idx = 0; idx < spineIds.length; idx++) {
+    const spineId = spineIds[idx];
     const manifestItem = manifestItems[spineId];
-    if (!manifestItem) continue;
+    if (!manifestItem) {
+      console.warn(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Item spine avec ID "${spineId}" absent du manifest.`);
+      continue;
+    }
 
     const htmlPath = manifestItem.href;
     const fullHtmlPath = basePath + htmlPath;
+    console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Traitement du fichier HTML : "${fullHtmlPath}" (ID: ${spineId})...`);
+    
     const htmlFile = zip.file(fullHtmlPath);
-    if (!htmlFile) continue;
+    if (!htmlFile) {
+      console.warn(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Fichier HTML introuvable dans le zip : "${fullHtmlPath}"`);
+      continue;
+    }
 
     const htmlText = await htmlFile.async('text');
     const htmlDom = domParser.parseFromString(htmlText, 'text/html');
 
     // Resolve and extract images inside this HTML chapter
     const imgEls = htmlDom.querySelectorAll('img');
+    if (imgEls.length > 0) {
+      console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Résolution de ${imgEls.length} balises <img>...`);
+    }
     for (let i = 0; i < imgEls.length; i++) {
       const imgEl = imgEls[i];
       const src = imgEl.getAttribute('src');
@@ -101,6 +121,7 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
 
         if (zipImageFile) {
           try {
+            console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Résolution de l'image : "${fullImgPath}"`);
             // Read image as base64
             const imgBase64 = await zipImageFile.async('base64');
             // Try to find the correct media-type from manifest
@@ -110,14 +131,19 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
             const mediaType = imgManifestItem?.mediaType || 'image/jpeg';
             imgEl.setAttribute('src', `data:${mediaType};base64,${imgBase64}`);
           } catch (e) {
-            console.error(`Error resolving EPUB image: ${fullImgPath}`, e);
+            console.error(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Erreur lors de la conversion de l'image "${fullImgPath}" :`, e);
           }
+        } else {
+          console.warn(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Fichier image introuvable dans le zip : "${fullImgPath}"`);
         }
       }
     }
 
     // Resolve SVG <image> tags (common in children's books or special EPUB formatting)
     const svgImgEls = htmlDom.querySelectorAll('image');
+    if (svgImgEls.length > 0) {
+      console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Résolution de ${svgImgEls.length} balises SVG <image>...`);
+    }
     for (let i = 0; i < svgImgEls.length; i++) {
       const svgImgEl = svgImgEls[i];
       const href = svgImgEl.getAttribute('href') || svgImgEl.getAttribute('xlink:href');
@@ -128,6 +154,7 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
 
         if (zipImageFile) {
           try {
+            console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Résolution de l'image SVG : "${fullImgPath}"`);
             const imgBase64 = await zipImageFile.async('base64');
             const imgManifestItem = Object.values(manifestItems).find(
               (item) => item.href === resolvedImgPath || basePath + item.href === fullImgPath
@@ -137,8 +164,10 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
             // Replace SVG image tag with normal img element inside a div or inline base64
             svgImgEl.setAttribute('href', `data:${mediaType};base64,${imgBase64}`);
           } catch (e) {
-            console.error(`Error resolving SVG image: ${fullImgPath}`, e);
+            console.error(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Erreur lors de la conversion de l'image SVG "${fullImgPath}" :`, e);
           }
+        } else {
+          console.warn(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Fichier image SVG introuvable dans le zip : "${fullImgPath}"`);
         }
       }
     }
@@ -158,6 +187,8 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
     // 5. Extract content elements (text paragraphs and inline images)
     const elements: SectionElement[] = [];
     const bodyEl = htmlDom.querySelector('body') || htmlDom.documentElement;
+
+    console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Extraction séquentielle du contenu de "${chapterTitle}"...`);
 
     // Traverse body elements in preorder to preserve sequential order of paragraphs and images
     const walkNode = (node: Node) => {
@@ -210,14 +241,18 @@ export async function parseEpub(file: File): Promise<ParsedDocument> {
 
     // If we have elements, save this as a section
     if (elements.length > 0) {
+      console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Chapitre "${chapterTitle}" enregistré avec ${elements.length} éléments.`);
       sections.push({
         title: chapterTitle,
         elements
       });
       chapterIndex++;
+    } else {
+      console.log(`[epubParser] [Spine ${idx + 1}/${spineIds.length}] Aucun paragraphe ou image exploitable trouvé dans "${chapterTitle}".`);
     }
   }
 
+  console.log('[epubParser] Analyse EPUB terminée avec succès ! Titre du livre :', bookTitle, '| Sections extraites :', sections.length);
   return {
     title: bookTitle,
     sections
