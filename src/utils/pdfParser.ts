@@ -30,8 +30,18 @@ export interface ParsedDocument {
 async function pdfImageToBase64(img: any): Promise<string> {
   return new Promise((resolve) => {
     try {
+      if (!img || typeof img !== 'object') {
+        resolve('');
+        return;
+      }
+
       const width = img.width;
       const height = img.height;
+      if (!width || !height) {
+        resolve('');
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
@@ -41,9 +51,14 @@ async function pdfImageToBase64(img: any): Promise<string> {
         return;
       }
 
+      const srcData = img.data;
+      if (!srcData) {
+        resolve('');
+        return;
+      }
+
       const imgData = ctx.createImageData(width, height);
       const data = imgData.data;
-      const srcData = img.data;
 
       if (srcData.length === width * height * 3) {
         // RGB format
